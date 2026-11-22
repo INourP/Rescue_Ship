@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: rescue-ship
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn rescue_ship:app
+    plan: free
