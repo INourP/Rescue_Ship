@@ -214,6 +214,8 @@ dir="{{ 'rtl' if lang in ['fa','ar'] else 'ltr' }}">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RESCUE SHIP</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
 <style>
@@ -291,6 +293,45 @@ body.dashboard-page::after {
     background-position: center center;
     background-repeat: no-repeat;
     opacity: .55;
+}
+
+/* ارتباط با استاد - فقط صفحه خوش‌آمدگویی */
+.welcome-contact {
+    position: fixed;
+    top: 22px;
+    left: 24px;
+    z-index: 150;
+    direction: rtl;
+    text-align: right;
+    padding: 11px 15px;
+    border: 1px solid rgba(231,196,119,.55);
+    border-radius: 12px;
+    background: rgba(12,8,25,.72);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 18px rgba(190,150,255,.12);
+}
+.welcome-contact-title {
+    color: #f0d99c;
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+.welcome-contact a {
+    color: #d6baff;
+    font-size: 13px;
+    text-decoration: none;
+    direction: ltr;
+    display: inline-block;
+    transition: color .2s, text-shadow .2s;
+}
+.welcome-contact a:hover {
+    color: #fff;
+    text-shadow: 0 0 10px #b98cff;
+}
+@media (max-width: 600px) {
+    .welcome-contact { top: 12px; left: 12px; padding: 8px 10px; }
+    .welcome-contact-title { font-size: 12px; }
+    .welcome-contact a { font-size: 11px; }
 }
 
 /* HEADER */
@@ -579,6 +620,42 @@ h1 {
     font-size: 23px;
 }
 
+/* دکمه بازگشت به صفحه خوش‌آمدگویی، فقط در صفحه فهرست‌ها */
+.dashboard-home-btn {
+    position: absolute;
+    top: 98px;
+    left: 24px;
+    z-index: 120;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 15px;
+    color: #e5ca8c;
+    text-decoration: none;
+    border: 1px solid #9f844c;
+    border-radius: 8px;
+    background: rgba(18, 12, 31, .82);
+    backdrop-filter: blur(8px);
+    font-size: 13px;
+    transition: .3s;
+}
+.dashboard-home-btn:hover {
+    background: #493267;
+    box-shadow: 0 0 16px rgba(214,182,109,.2);
+}
+@media(max-width:650px) {
+    .dashboard-home-btn { top: 90px; left: 12px; padding: 8px 11px; font-size: 11px; }
+}
+
+/* بهینه‌سازی نمایش و جابه‌جایی صفحات در گوشی */
+@media (max-width: 768px) {
+    main { animation: none; }
+    .card { animation: none; transition: border-color .15s, background-color .15s; }
+    header, .welcome-contact, .dashboard-home-btn { backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .card:hover, .gold-btn:hover { transform: none; }
+    body.dashboard-page::after { background-size: cover; }
+}
+
 .back-btn {
     display: inline-flex;
     align-items: center;
@@ -693,6 +770,10 @@ footer {
 
 {% if page == 'welcome' %}
 <div class="welcome-stars" aria-hidden="true"></div>
+<div class="welcome-contact">
+    <div class="welcome-contact-title">ارتباط با استاد</div>
+    <a href="https://t.me/Adachaeichei" target="_blank" rel="noopener noreferrer">@Adachaeichei</a>
+</div>
 {% endif %}
 
 <header class="{{ 'welcome-header' if page == 'welcome' else '' }}">
@@ -739,6 +820,10 @@ footer {
     </div>
 
 {% elif page == "dashboard" %}
+
+    <a class="dashboard-home-btn" href="{{ url_for('home', lang=lang) }}">
+        ← {{ t.back }}
+    </a>
 
     <h1 class="page-title">{{ t.categories }}</h1>
     <p class="page-subtitle">{{ t.select }}</p>
@@ -831,6 +916,25 @@ document.addEventListener("click", function(e) {
         document.getElementById("dropdown").classList.remove("show");
     }
 });
+
+// پیش‌بارگذاری مقصد لینک‌های داخلی هنگام لمس/کلیک؛ تا صفحه بعد زودتر آماده شود.
+(() => {
+    const prefetched = new Set();
+    function prefetchInternalLink(event) {
+        const link = event.target.closest('a[href]');
+        if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+        const url = new URL(link.href, window.location.href);
+        if (url.origin !== window.location.origin || prefetched.has(url.href)) return;
+        prefetched.add(url.href);
+        const hint = document.createElement('link');
+        hint.rel = 'prefetch';
+        hint.href = url.href;
+        document.head.appendChild(hint);
+    }
+    document.addEventListener('pointerover', prefetchInternalLink, {passive: true});
+    document.addEventListener('touchstart', prefetchInternalLink, {passive: true});
+    document.addEventListener('pointerdown', prefetchInternalLink, {passive: true});
+})();
 </script>
 
 <script>
